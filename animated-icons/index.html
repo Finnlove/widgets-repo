@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动画天气图标挂件</title>
+</head>
+<body style="margin: 0; padding: 0; overflow: hidden;">
+  <a class="weatherwidget-io" href="https://forecast7.com/zh/20d04110d20/haikou/"
+     data-label_1="海口" data-label_2="月半宵夜趣"
+     data-font="微软雅黑 (Microsoft Yahei)"
+     data-icons="Climacons Animated"
+     data-days="3" data-theme="candy"
+     data-basecolor="rgba(70, 208, 16, 0)"
+     data-shadow="rgba(8, 9, 9, 0.15)"
+     data-textcolor="#69b9de"
+     data-highcolor="rgba(94, 176, 221, 0.93)"
+     data-lowcolor="#84c4d7"
+     data-mooncolor="#96bec3"
+     data-cloudfill="#86c7d9"
+     data-raincolor="#65bacb"
+     data-snowcolor="#96bacf">
+    海口 月半宵夜趣
+  </a>
+  <script>
+   !function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (!d.getElementById(id)) {
+        js = d.createElement(s);
+        js.id = id;
+        js.src = 'https://weatherwidget.io/js/widget.min.js';
+        fjs.parentNode.insertBefore(js, fjs);
+      }
+    }(document,'script', 'weatherwidget-io-js');
+  </script>
+</body>
+</html>
