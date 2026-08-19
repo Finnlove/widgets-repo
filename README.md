@@ -115,7 +115,9 @@ bg-1weather/
 | animated-icons | `guajiantianqi` | ✅ 保留 |
 | bg-image-icons | `tianqiguajian` | ✅ 保留 |
 | transparent | `transforweather` | ✅ 保留 |
-| simple-scroll | `weather2` | ✅ 保留 |
+| simple-scroll | \weather2\ | ✅ 保留
+| progress | \
+otionwidgets\ | ✅ 保留（仅 progress.html） |
 
 **已被合并的重复仓库**（建议 Archive）：
 - `clock-test` = bg-1weather 的完全复制
