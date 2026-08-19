@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>背景图+动画天气图标</title>
+</head>
+<body style="margin: 0; padding: 0; overflow: hidden;">
+  <a class="weatherwidget-io" href="https://forecast7.com/zh/20d04110d20/haikou/"
+     data-label_1="HAIKOU" data-label_2="月半宵夜趣"
+     data-font="微软雅黑 (Microsoft Yahei)"
+     style="background: url('https://img2.baidu.com/it/u=2781232805,29689916&fm=253&fmt=auto&app=138&f=GIF?w=394&h=223') no-repeat center center / cover; padding: 10px; color: white;">
+    HAIKOU 月半宵夜趣
+  </a>
+  <script>
+   !function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (!d.getElementById(id)) {
+        js = d.createElement(s);
+        js.id = id;
+        js.src = 'https://weatherwidget.io/js/widget.min.js';
+        fjs.parentNode.insertBefore(js, fjs);
+      }
+    }(document,'script', 'weatherwidget-io-js');
+  </script>
+</body>
+</html>
