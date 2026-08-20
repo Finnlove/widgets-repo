@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>LiuJi's Resilio Sync Keys</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<meta name="format-detection" content="telephone=no" />
+	<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script> -->
+	<!-- 生产环境版本，优化了尺寸和速度 -->
+	<script src="https://cdn.jsdelivr.net/npm/vue@2" />
+	</script>
+
+	<!-- 引入样式 -->
+	<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+	<!-- 引入组件库 -->
+	<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+
+	<!-- 国际化 -->
+	<!-- <script src="//unpkg.com/vue-i18n/dist/vue-i18n.js"></script>            -->
+	<!-- <script src="//unpkg.com/element-ui/lib/umd/locale/zh-CN.js"></script>   -->
+	<!-- <script src="//unpkg.com/element-ui/lib/umd/locale/en.js"></script>      -->
+
+	<style>
+		.el-tag+.el-tag {
+			margin-left: 2px;
+		}
+
+		.noSelect {
+			/* moz-user-select: -moz-none; */
+			-moz-user-select: none;
+			-o-user-select: none;
+			-khtml-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<el-container>
+			<el-header style="text-align: right; font-size: 12px" class="noSelect">
+				<span style="float: left; font-size: 30px;">Resilio Sync Keys</span>
+			</el-header>
+			<el-main>
+				<el-table v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+					element-loading-background="rgba(0, 0, 0, 0.8)" ref="filterTable" :data="tableData" max-height="600"
+					style="width: 100%" stripe="true">
+					<el-table-column prop="name" label="名称" min-width="100">
+						<template slot-scope="scope">
+							<el-popover trigger="hover" placement="top">
+								<p>名称: {{ scope.row.name ? scope.row.name : '无' }}</p>
+								<p>描述: {{ scope.row.describe ? scope.row.describe : '无' }}</p>
+								<div slot="reference" class="name-wrapper">
+									{{ scope.row.name }}
+								</div>
+							</el-popover>
+						</template>
+					</el-table-column>
+					<el-table-column prop="key" label="Key" min-width="200">
+					</el-table-column>
+					<el-table-column prop="tags" label="分类" filter-placement="bottom-end">
+						<template slot-scope="scope">
+							<div v-if="scope.row.tags.constructor === Array">
+								<el-tag v-for="(tag,index) in scope.row.tags" :key="index" effect="plain">{{tag}}
+								</el-tag>
+							</div>
+							<div v-else-if="scope.row.tags.constructor === String && scope.row.tags">
+								<el-tag effect="plain">{{scope.row.tags}}</el-tag>
+							</div>
+							<div v-else>
+								<el-tag effect="plain">默认</el-tag>
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column align="right">
+						<template slot="header" slot-scope="scope">
+							<el-autocomplete class="inline-input" v-model="search" :fetch-suggestions="querySearch"
+								placeholder="输入关键字搜索" :trigger-on-focus="false" @select="handleSelect"
+								@keyup.enter.native="handleSearch"
+								@input="changeStyle('block', '.el-autocomplete-suggestion')"
+								@keyup="changeStyle('block', '.el-autocomplete-suggestion')">
+								<template slot-scope="{ item }">
+									<div class="name">{{ item.name }}</div>
+								</template>
+							</el-autocomplete>
+						</template>
+						<template slot-scope="scope">
+							<el-button class="btn" size="mini" :data-clipboard-text="scope.row.key">复制
+							</el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+			</el-main>
+			<el-footer style="text-align: right; font-size: 12px">
+				<el-button style="float: left" @click="shareKey">
+					分享
+				</el-button>
+				<span>By <el-link icon="el-icon-view" href="https://github.com/ACG-Q/UserNotionWidgets">Github</el-link>
+				</span>
+			</el-footer>
+		</el-container>
+
+		<el-drawer title="分享步骤" ref="shareDrawer" :visible.sync="drawer" :with-header="true" :before-close="handleClose">
+			<el-container>
+				<el-main>
+					<el-steps :active="active" finish-status="success">
+						<el-step title="跳转分享KEY模板" description="关闭当前页面后, 自动跳转📤"></el-step>
+						<el-step title="填写KEY相关的信息" description="填写KEY相关的信息😀"></el-step>
+						<el-step title="发布ISSUE" description="然后就是等待我的审批😏, 通过后就自动添加至列表"></el-step>
+					</el-steps>
+					<el-button style="margin-top: 12px;" @click="next">{{active < 3?'下一步':'完成'}}</el-button>
+				</el-main>
+			</el-container>
+		</el-drawer>
+
+	</div>
+
+	<script>
+		// https://cdn.jsdelivr.net/gh/ACG-Q/UserNotionWidgets@main/res/Resilio_Sync_Keys/key.json
+		var clipboard = new ClipboardJS('.btn');
+		var positions = ['bottom-right', 'top-right', 'bottom-left', 'top-left']
+		var keyUrl = 'https://cdn.jsdelivr.net/gh/ACG-Q/UserNotionWidgets@main/res/Resilio_Sync_Keys/key.json'
+		// 获取 -->关闭的, 标签为Resilio_Sync_Key的问题<--
+		var newkeyUrl = 'https://api.github.com/repos/ACG-Q/UserNotionWidgets/issues?state=closed&labels=Resilio_Sync_Key'
+
+		clipboard.on('success', function (e) {
+			console.info('Action:', e.action);
+			console.info('Text:', e.text);
+			console.info('Trigger:', e.trigger);
+			vue.$notify({
+				title: '复制成功',
+				type: 'success'
+			});
+
+			e.clearSelection();
+		});
+
+		clipboard.on('error', function (e) {
+			console.error('Action:', e.action);
+			console.error('Trigger:', e.trigger);
+			vue.$notify.error({
+				title: '复制失败'
+			});
+		});
+
+		function duplicate_removal(arr, options) {
+			if (arr.constructor !== Array) return arr
+			if (!options) {
+				options = {
+					cover: false,// true 覆盖 false 不覆盖
+					value: ''
+				}
+			}
+			const { cover, value } = options;
+
+			for (var i = 0; i < arr.length; i++) {
+				for (var j = i + 1; j < arr.length; j++) {
+					let judge = arr[i] == arr[j]
+					if (value) judge = arr[i][value] == arr[j][value]
+					if (judge) {        //第一个等同于第二个，splice方法删除第二个
+						if (cover) {
+							arr.splice(i, 1);
+							i--;
+						} else {
+							arr.splice(j, 1);
+							j--;
+						}
+
+					}
+				}
+			}
+
+			return arr
+		}
+
+		var vue = new Vue({
+			el: '#app',
+			created: () => {
+				axios.get(keyUrl)
+					.then((res) => {
+						let data = res.data;
+						// console.log(data);
+						vue.$data.tableData = data;
+						vue.$data.loading = false;
+						vue.$data.tmp = data;
+						vue.$notify({
+							title: '获取默认的Resilio Sync Key成功',
+							type: 'success'
+						});
+					})
+					.catch((error) => {
+						// console.log(error);
+						vue.$notify.error({
+							title: '获取默认的Resilio Sync Key失败',
+							message: error
+						});
+					});
+			},
+			mounted() {
+				this.getNewKey()
+			},
+			data: {
+				tableData: [],
+				search: '',
+				loading: true,
+				tmp: [],
+				drawer: false,
+				active: 0,
+			},
+			methods: {
+				handleSearch() {
+					let search = this.search.replace('\\', '\/').toLowerCase();
+					console.log(search)
+					vue.$data.tableData = this.tmp.filter(data => {
+						let re = new RegExp(`${search}`, 'ig')
+						return data.name ? data.name.toLowerCase().match(re) : false
+					})
+				},
+				handleSelect(data) {
+					// console.log(data)
+					if (!!data) {
+						vue.$data.tableData = [data];
+						return
+					}
+
+				},
+				querySearch(queryString, cb) {
+					var restaurants = this.tmp;
+					var results = queryString ? restaurants.filter(restaurant => {
+						return !!restaurant.name ? restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) >= 0 : false
+					}) : restaurants;
+					cb(results);
+				},
+				changeStyle(status, className) {
+					let dom = document.querySelectorAll(className);
+					dom[0].style.display = status;
+				},
+				shareKey() {
+					vue.$data.drawer = true
+				},
+				handleClose(done) {
+					this.$confirm('确定已经明白分享KEY的方法?', '提示', {
+						roundButton: true, confirmButtonText: '我明白了, 这就去分享', cancelButtonText: '下次再分享',
+					})
+						.then(_ => {
+							done();
+							vue.$notify.info({
+								title: '正在跳转至issues',
+								position: positions[Math.floor(Math.random() * 4)]
+							});
+							window.open('https://github.com/ACG-Q/UserNotionWidgets/issues/new?assignees=&labels=&template=ISSUE_TEMPLATE_1.md', '_blank');
+						})
+						.catch(_ => {
+							done();
+						});
+				},
+				getNewKey() {
+					axios.get(newkeyUrl)
+						.then((res) => {
+							let data = res.data;
+							let tmpData = [];
+							for (let i of data) {
+								let body = i.body;
+								tmpData.push(JSON.parse(body))
+							}
+							vue.$data.tableData = duplicate_removal(this.tableData.concat(tmpData), { cover: true });
+							vue.$data.tmp = this.tableData;
+							// console.log(this.tableData)
+							vue.$notify({
+								title: '获取issues分享的KEY成功',
+								type: 'success'
+							});
+						})
+						.catch((error) => {
+							// console.log(error);
+							vue.$notify.error({
+								title: '获取issues分享的KEY失败',
+								message: error
+							});
+						});
+				},
+				next() {
+					if (this.active++ > 2) {
+						this.$refs.shareDrawer.closeDrawer()
+						this.active = 0;
+					};
+				}
+			}
+		})
+
+	</script>
+</body>
+
+</html>
