@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Montserrat:900">
+  <title>倒计时</title>
+  <style>
+    body {
+      background-color: white;
+    }
+
+    #timer {
+      color: #eeeeee;
+      text-align: center;
+      text-transform: uppercase;
+      font-family: 'Lato', sans-serif;
+      font-size: .7em;
+      letter-spacing: 5px;
+    }
+
+    .days,
+    .hours,
+    .minutes,
+    .seconds {
+      display: inline-block;
+      padding: 20px;
+      width: auto;
+      border-radius: 5px;
+    }
+
+    .days {
+      background: #EF2F3C;
+    }
+
+    .hours {
+      background: #eeeeee;
+      color: #183059;
+    }
+
+    .minutes {
+      background: #276FBF;
+    }
+
+    .seconds {
+      background: #F0A202;
+    }
+
+    .numbers {
+      font-family: 'Montserrat', sans-serif;
+      /* color: #183059; */
+      font-size: 4em;
+      text-align: center;
+      -webkit-animation: rainbow-border 20s infinite ease-in-out;
+      animation: rainbow-border 20s infinite ease-in-out;
+    }
+
+
+    .days {
+      -webkit-animation: rainbow-bg 20s infinite ease-in-out;
+      animation: rainbow-bg 20s infinite ease-in-out;
+    }
+
+
+    /* #E91E63 #673ab7 #3f51b5 #00bcd4 #009688 #4caf50 #8bc34a #ffc107 #ff9800 #ff5722 */
+    @-webkit-keyframes rainbow-bg {
+      0% {
+        background: #E91E63;
+      }
+
+      10% {
+        background: #673ab7;
+      }
+
+      20% {
+        background: #3f51b5;
+      }
+
+      30% {
+        background: #00bcd4;
+      }
+
+      40% {
+        background: #009688;
+      }
+
+      50% {
+        background: #4caf50;
+      }
+
+      60% {
+        background: #8bc34a;
+      }
+
+      70% {
+        background: #ffc107;
+      }
+
+      80% {
+        background: #ff9800;
+      }
+
+      90% {
+        background: #ff5722;
+      }
+
+      100% {
+        background: #E91E63;
+      }
+    }
+
+    @keyframes rainbow-bg {
+      0% {
+        background: #E91E63;
+      }
+
+      10% {
+        background: #673ab7;
+      }
+
+      20% {
+        background: #3f51b5;
+      }
+
+      30% {
+        background: #00bcd4;
+      }
+
+      40% {
+        background: #009688;
+      }
+
+      50% {
+        background: #4caf50;
+      }
+
+      60% {
+        background: #8bc34a;
+      }
+
+      70% {
+        background: #ffc107;
+      }
+
+      80% {
+        background: #ff9800;
+      }
+
+      90% {
+        background: #ff5722;
+      }
+
+      100% {
+        background: #E91E63;
+      }
+    }
+
+    @-webkit-keyframes rainbow-border {
+      0% {
+        color: #E91E63;
+      }
+
+      10% {
+        color: #ff5722;
+      }
+
+      20% {
+        color: #ff9800;
+      }
+
+      30% {
+        color: #ffc107;
+      }
+
+      40% {
+        color: #8bc34a;
+      }
+
+      50% {
+        color: #4caf50;
+      }
+
+      60% {
+        color: #009688;
+      }
+
+      70% {
+        color: #00bcd4;
+      }
+
+      80% {
+        color: #3f51b5;
+      }
+
+      90% {
+        color: #673ab7;
+      }
+
+      100% {
+        color: #F44336;
+      }
+    }
+
+    @keyframes rainbow-border {
+      0% {
+        color: #E91E63;
+      }
+
+      10% {
+        color: #ff5722;
+      }
+
+      20% {
+        color: #ff9800;
+      }
+
+      30% {
+        color: #ffc107;
+      }
+
+      40% {
+        color: #8bc34a;
+      }
+
+      50% {
+        color: #4caf50;
+      }
+
+      60% {
+        color: #009688;
+      }
+
+      70% {
+        color: #00bcd4;
+      }
+
+      80% {
+        color: #3f51b5;
+      }
+
+      90% {
+        color: #673ab7;
+      }
+
+      100% {
+        color: #F44336;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="timer">
+    <div class="days">
+      <span style="display: flex;">下次时间:<div id="target"></div></span>
+      <span>
+        <div id="days" class="numbers"></div>天
+      </span>
+    </div>
+  </div>
+
+  </div>
+
+</body>
+<script>
+  function convert(s) {
+    let len = s.toString().length;
+    return len > 1 ? s : `0${s}`
+  }
+
+  function dateFtt(fmt, date) {
+    var o = {
+      "M+": date.getMonth() + 1,                 //月份   
+      "d+": date.getDate(),                    //日   
+      "h+": date.getHours(),                   //小时   
+      "m+": date.getMinutes(),                 //分   
+      "s+": date.getSeconds(),                 //秒   
+      "q+": Math.floor((date.getMonth() + 3) / 3), //季度   
+      "S": date.getMilliseconds()             //毫秒   
+    };
+    if (/(y+)/.test(fmt))
+      fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+      if (new RegExp("(" + k + ")").test(fmt))
+        fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+  }
+
+  // 纪念日
+  const mark = {
+    month: 2,
+    day: 6,
+  }
+  var year = 0, month = 0, day = 0, dataString = '', myDate = 0;
+
+  function refresh() {
+    // 获取当前年份
+    year = new Date().getFullYear();
+    // 获取当前月份
+    month = new Date().getMonth() + 1;
+    day = new Date().getDate();
+    // 判断
+    if (month > mark.month || (month == mark.month && day > mark.day)) year += 1;
+    dataString = `${year} ${convert(mark.month)} ${convert(mark.day)}`;
+    // console.log(dataString)
+    myDate = new Date(dataString);
+
+    document.getElementById("target").innerHTML = dateFtt("yyyy-MM-dd", myDate);
+  }
+
+  refresh();
+
+
+
+  let timer = setInterval(function () {
+    const today = new Date().getTime();
+
+    const diff = myDate - today;
+
+    let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    document.getElementById("days").innerHTML = days
+  }, 1);
+
+  // let changeTarget = setInterval(function () {
+  //   refresh();
+  // }, 604800000);
+
+</script>
+
+</html>
