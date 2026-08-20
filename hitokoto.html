@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>一言</title>
+
+  <style>
+    body {
+      background-color: #92929261;
+    }
+
+    a {
+      text-decoration: none;
+      color: white;
+    }
+
+    #hitokoto_text {
+      font-size: 2.3rem;
+      text-align: center;
+      line-height: 50px;
+      word-break: normal;
+      margin: 0;
+      padding: 15px 50px;
+    }
+
+    #hitokoto_author {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.8);
+      float: right;
+      margin-top: 10px;
+    }
+
+    .hitokoto-fullpage {
+      position: relative;
+      color: white;
+      z-index: 1;
+      margin-bottom: 7vh;
+      margin-left: auto;
+      margin-right: auto;
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", 微软雅黑, Arial, sans-serif;
+    }
+
+    .bracket {
+      position: absolute;
+      font-size: 30px;
+    }
+
+    .bracket.left {
+      left: 0;
+      top: 0;
+    }
+
+    .bracket.right {
+      right: 0;
+      bottom: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- https://v1.hitokoto.cn/ -->
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <!--hitokoto一言-->
+      <div id="hitokoto" class="hitokoto-fullpage bounce animated">
+        <div class="bracket left">『</div>
+        <div class="word" id="hitokoto_text">
+          <a target="_blank">身为冒险者，如果安静的老死在床上，那简直就是耻辱！</a>
+        </div>
+        <div class="bracket right">』</div>
+        <div class="author" id="hitokoto_author"></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    const requests = () => {
+      var xhr = new XMLHttpRequest();
+      xhr.open("get", "https://v1.hitokoto.cn");
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          var data = JSON.parse(xhr.responseText);
+          var hitokoto = document.querySelector("#hitokoto_text>a");
+          hitokoto.href = "https://hitokoto.cn/?uuid=" + data.uuid;
+          hitokoto.innerText = data.hitokoto;
+          var author = document.getElementById("hitokoto_author");
+          console.log(data.from_who)
+          if (!!data.from_who && !!data.from) {
+            author.innerText = `—— ${data.from_who}「${data.from}」`;
+            author.hidden = false;
+          } else {
+            author.hidden = true;
+          }
+        }
+      };
+      xhr.send();
+    }
+    requests();
+    setInterval(requests(), 10000);
+  </script>
+</body>
+
+</html>
