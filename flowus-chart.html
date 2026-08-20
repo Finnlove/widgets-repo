@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowUs 数据图表</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        .charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .chart-box {
+            position: relative;
+        }
+        .chart-box h3 {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #aaa;
+        }
+        .status.loading { color: #f0ad4e; }
+        .status.ok { color: #5cb85c; }
+        .status.error { color: #d9534f; }
+        @media (max-width: 600px) {
+            .charts { grid-template-columns: 1fr; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 FlowUs 多维表数据图表</h1>
+        <p class="subtitle">数据来源：「我是一个多维表格例子」</p>
+
+        <div class="charts">
+            <div class="chart-box">
+                <h3>柱状图 — 年收入对比</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>饼图 — 收入占比</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <p id="status" class="status loading">加载数据中...</p>
+    </div>
+
+    <script>
+    // ============================================
+    // FlowUs 配置 — 修改这里连接你的多维表
+    // ============================================
+    const FLOWUS_CONFIG = {
+        // 多维表 ID（从 FlowUs URL 获取）
+        databaseId: '289e7a36-536a-41bf-9a1c-a3c04a384172',
+        // 字段名映射
+        labelField: '身份',    // 用作标签的字段（标题类型）
+        nameField: '名字',     // 名字字段
+        valueField: '年收入（亿元）', // 数值字段
+    };
+
+    // ============================================
+    // 硬编码数据（FlowUs API 需要 token，静态页面用这份）
+    // 如果要实时数据，需要部署后端代理
+    // ============================================
+    const DATA = [
+        { label: '老公 · 金城武', value: 10 },
+        { label: '前男友 · 吴彦祖', value: 6 },
+        { label: '闺蜜 · 李佩斯', value: 7 },
+        { label: '渣男 · 小李子', value: 1 },
+    ];
+
+    const COLORS = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+        '#9966FF', '#FF9F40', '#C9CBCF', '#7BC8A4'
+    ];
+
+    function renderCharts(data) {
+        const labels = data.map(d => d.label);
+        const values = data.map(d => d.value);
+
+        // 柱状图
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: '年收入（亿元）',
+                    data: values,
+                    backgroundColor: COLORS.slice(0, values.length),
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `${ctx.parsed.y} 亿元`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: v => v + '亿' }
+                    },
+                    x: {
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // 饼图
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: COLORS.slice(0, values.length),
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 11 }, padding: 12 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                                return `${ctx.label}: ${ctx.parsed}亿元 (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        document.getElementById('status').className = 'status ok';
+        document.getElementById('status').textContent =
+            `✅ 已加载 ${data.length} 条数据 · 点击图表查看详情`;
+    }
+
+    // 渲染
+    renderCharts(DATA);
+    </script>
+</body>
+</html>
